@@ -21,6 +21,7 @@ then
   ssh-keygen -t rsa -b 4096 -N "" -C "salt-master@infra-secrets" -f "${secretGitKeyPath}"
 fi
 
+# setup salt master and minon
 timeout 5 salt-call test.ping > /dev/null
 if test "$?" -ne "0"
 then
@@ -61,6 +62,7 @@ EOF
   salt $(hostname) ssh.set_known_host user=root hostname=github.com
 fi
 
+# output ssh key
 if test -e "${secretGitKeyPath}"
 then
   cat "${secretGitKeyPath}"
