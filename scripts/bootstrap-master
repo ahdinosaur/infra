@@ -1,0 +1,55 @@
+#!/bin/sh
+
+# install salt
+if ! type salt &> /dev/null
+then
+  echo "deb http://debian.saltstack.com/debian jessie-saltstack main" > /etc/apt/sources.list.d/saltstack.list
+  wget -O - http://debian.saltstack.com/debian-salt-team-joehealy.gpg.key | apt-key add -
+  apt-get update -q
+  apt-get install -y salt-master salt-minion python-apt software-properties-common python-git python-msgpack
+fi
+
+timeout 5 salt-call test.ping > /dev/null
+if test "$?" -ne "0"
+then
+  # point salt dns name to localhost
+  grep -q -F '127.0.0.1 salt' /etc/hosts || echo '127.0.0.1 salt' >> /etc/hosts
+
+  # wait for salt minion to start
+  sleep 45
+
+  # add minion key of master
+  minionFingerprint=$(salt-call --local key.finger | head -n 2 | tail -n 1 | xargs)
+  minionName=$(salt-key -F | grep "${minionFingerprint}" | head -n 1 | tail -n 1 | cut -d ":" -f "1" | xargs)
+  salt-key -y -a "${minionName}"
+
+  cat > /etc/salt/master <<EOF
+fileserver_backend:
+  - git
+
+gitfs_remotes:
+  - git://github.com/ahdinosaur/infra.git:
+
+ext_pillar:
+  - git:
+    - master git@github.com:ahdinosaur/infra-secrets.git:
+EOF
+
+  cat > /etc/salt/minion <<EOF
+grains:
+  roles:
+    - salt-master
+EOF
+fi
+
+# create git ssh key
+gitKeyPath="$HOME/.ssh/salt-master"
+if ! test -e "${gitKeyPath}"
+then
+  ssh-keygen -t rsa -b 4096 -N "" -C "salt-master" -f "${gitKeyPath}"
+fi
+if test -e "${gitKeyPath}"
+then
+  cat "${gitKeyPath}"
+  cat "${gitKeyPath}.pub"
+fi

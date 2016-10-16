@@ -1,0 +1,20 @@
+{
+  "name": "infrastructure",
+  "version": "0.0.0",
+  "description": "Root Systems infrastructure using {Open,Salt}Stack",
+  "scripts": {
+    "fix:permissions": "sudo chown -R dinosaur:dinosaur .",
+    "salt-cloud:build": "docker build -t ahdinosaur/salt-cloud scripts/salt-cloud",
+    "salt-cloud:push": "docker push ahdinosaur/salt-cloud",
+    "salt-cloud": "docker run --rm -it -v $(pwd):/etc/salt ahdinosaur/salt-cloud",
+    "salt-ssh:build": "docker build -t ahdinosaur/salt-ssh scripts/salt-ssh",
+    "salt-ssh:push": "docker push ahdinosaur/salt-ssh",
+    "salt-ssh": "docker run --rm -it -v $(pwd):/etc/salt ahdinosaur/salt-ssh",
+    "salt-ssh:ping": "npm run salt-ssh -- '*' test.ping",
+    "master": "ssh root@$(cat location) salt",
+    "master:ssh": "ssh root@$(cat location)",
+    "master:bootstrap": "ssh root@$(cat location) 'bash -s' < ./scripts/bootstrap-master"
+  },
+  "author": "Mikey <michael.williams@enspiral.com> (http://dinosaur.is)",
+  "license": ""
+}
