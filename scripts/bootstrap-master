@@ -3,10 +3,22 @@
 # install salt
 if ! type salt &> /dev/null
 then
-  echo "deb http://debian.saltstack.com/debian jessie-saltstack main" > /etc/apt/sources.list.d/saltstack.list
-  wget -O - http://debian.saltstack.com/debian-salt-team-joehealy.gpg.key | apt-key add -
+  export DEBIAN_FRONTEND=noninteractive
   apt-get update -q
-  apt-get install -y salt-master salt-minion python-apt software-properties-common python-git python-msgpack
+  apt-get install -qy apt-transport-https
+  echo "deb https://repo.saltstack.com/apt/debian/8/amd64/latest jessie main" > /etc/apt/sources.list.d/saltstack.list
+  wget -O - https://repo.saltstack.com/apt/debian/8/amd64/latest/SALTSTACK-GPG-KEY.pub | sudo apt-key add -
+  echo 'APT::Default-Release "jessie";' > /etc/apt/apt.conf.d/10apt
+  echo "deb https://httpredir.debian.org/debian stretch main" > /etc/apt/sources.list.d/debian-stretch.list
+  apt-get update -q
+  apt-get install -qy salt-master salt-minion salt-cloud python-pygit2/stretch
+fi
+
+# create git ssh key
+secretGitKeyPath="$HOME/.ssh/infra-secrets"
+if ! test -e "${secretGitKeyPath}"
+then
+  ssh-keygen -t rsa -b 4096 -N "" -C "salt-master@infra-secrets" -f "${secretGitKeyPath}"
 fi
 
 timeout 5 salt-call test.ping > /dev/null
@@ -24,15 +36,18 @@ then
   salt-key -y -a "${minionName}"
 
   cat > /etc/salt/master <<EOF
+hash_type: sha256
 fileserver_backend:
   - git
-
+gitfs_provider: pygit2
 gitfs_remotes:
-  - git://github.com/ahdinosaur/infra.git:
-
+  - git://github.com/ahdinosaur/infra.git
+git_pillar_provider: pygit2
 ext_pillar:
   - git:
     - master git@github.com:ahdinosaur/infra-secrets.git:
+      - privkey: ${secretGitKeyPath}
+      - pubkey: ${secretGitKeyPath}.pub
 EOF
 
   cat > /etc/salt/minion <<EOF
@@ -40,16 +55,14 @@ grains:
   roles:
     - salt-master
 EOF
+
+  salt-run fileserver.update
+  salt '*' saltutil.refresh_pillar
+  salt $(hostname) ssh.set_known_host user=root hostname=github.com
 fi
 
-# create git ssh key
-gitKeyPath="$HOME/.ssh/salt-master"
-if ! test -e "${gitKeyPath}"
+if test -e "${secretGitKeyPath}"
 then
-  ssh-keygen -t rsa -b 4096 -N "" -C "salt-master" -f "${gitKeyPath}"
-fi
-if test -e "${gitKeyPath}"
-then
-  cat "${gitKeyPath}"
-  cat "${gitKeyPath}.pub"
+  cat "${secretGitKeyPath}"
+  cat "${secretGitKeyPath}.pub"
 fi
