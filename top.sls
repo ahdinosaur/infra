@@ -5,6 +5,7 @@ base:
   'roles:salt-master':
     - match: grain
     - salt.master
+    - salt.minion
     - salt.cloud
-    - salt.gitfs.pygit2
+    - salt.pkgrepo
     - cloud

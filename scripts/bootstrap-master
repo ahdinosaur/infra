@@ -42,7 +42,8 @@ fileserver_backend:
   - git
 gitfs_provider: pygit2
 gitfs_remotes:
-  - git://github.com/ahdinosaur/infra.git
+  - https://github.com/ahdinosaur/infra.git
+  - https://github.com/saltstack-formulas/salt-formula.git
 git_pillar_provider: pygit2
 ext_pillar:
   - git:

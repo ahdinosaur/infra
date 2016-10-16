@@ -61,3 +61,7 @@ private network: `10.100.0.0/16`
 - app(s): `10.100.101.x`
 
 public load balancers to staging and app(s)
+
+## other ideas
+
+- manage our GitHub org and users
