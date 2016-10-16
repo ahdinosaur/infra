@@ -1,8 +1,10 @@
 base:
-  'G@roles:salt-minion':
+  'roles:salt-minion':
+    - match: grain
     - salt.minion
-  'G@roles:salt-master':
+  'roles:salt-master':
+    - match: grain
     - salt.master
-    - salt.gitfs.keys
+    - salt.cloud
     - salt.gitfs.pygit2
     - cloud
