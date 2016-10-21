@@ -1,67 +1,104 @@
 # infrastructure
 
-{[Open](https://docs.openstack.org/),[Salt](https://docs.saltstack.com)}Stack infrastructure for [Root Systems](https://github.com/enspiral-root-systems/)
+the truth about the cloud, open source.
+
+sponsored by [Enspiral Root Systems](https://github.com/enspiral-root-systems/)
 
 **work in progress**
 
-## overview
+## what?
 
 we are a [tech consultancy co-op](https://www.youtube.com/watch?v=Zo9TOSxnY2I).
 
-this setup aims to provide us with:
+we rely on servers to be our friends. we need them when the user wants to view our (client's) beautiful app, but we also need them when we want to test, build, deploy, manage, log, etc our apps. these server friends are our "infrastructure".
 
-- cloud infrastructure without vendor lock-in using [OpenStack](https://docs.openstack.org/) and Debian
-- configuration management and orchestration using [SaltStack](https://docs.saltstack.com)
-- service management using `systemd`
-- containerized services using `docker`
-- continuous integretation and deployment using buildkite
-- friendly and fun web apps using Node.js
+### overview
 
-## [install]('./INSTALL.md')
+we want a setup where:
 
-## agents
+- the configuration of our setup is described as files in a `git` repository
+- it's easy to change the configuration via pull requests and the usual GitHub flow
+- we have standard development, deployment, and maintenance practices across projects
+- moving from development to production to maintenance doesn't involve fighting dragons
+- every project we do has continuous integration and deployment by default
+- it's easy to spin up small bots to do useful and fun tasks for us
+- we are not locked into a specific cloud vendor, so we can run servers anywhere in the world
+- all the services we rely on are hosted by us, preferably local to where we live
+- shit doesn't break all the time, so we get to spend time and energy doing what we love
 
-- [ ] SaltStack master
-- [ ] dns server
-- [ ] npm cache
-- [ ] private docker registry
-- [ ] buildkite agent
-- [ ] Postgres database
-- [ ] web app (staging or production)
+## how?
 
-## workflow
+### dependencies
+
+- [catalyst cloud](www.catalyst.net.nz/catalyst-cloud)
+- [packer](https://www.packer.io)
+- [terraform](https://www.terraform.io)
+- [saltstack](https://saltstack.com)
+- [docker](https://www.docker.io)
+- [jenkins](https://jenkins.io/)
+
+### [setup]('./SETUP.md')
+
+### workflow
+
+#### develop infra images using vagrant
+
+#### build infra images using packer
+
+#### deploy infra instances using terraform and openstack
+
+#### orchestrate infra instances using saltstack
+
+#### deploy web apps with GitHub
 
 1. developer pushes to git repo
-1. git repo triggers buildkite pipeline
-1. buildkite builds and pushes docker image
-1. salt master listens to docker push, deploys staging
+1. git repo triggers jenkins pipeline
+1. jenkins builds and pushes docker image
+1. docker image triggers staging deploy
 
-## nodes
+### toplogy
 
-- master
-  - SaltStack master
-  - dns server
-  - npm cache
-  - private docker registry
-- build
-  - buildkite agents
-- staging
-  - staging apps
-- db
-- prod
+- the primary support server
+  - hosts saltstack master
+  - hosts jenkins master
+  - handles dns for the network
+  - provides an npm cache for the build servers
+  - provides a private docker registry
+- some follower support servers
+  - hosts saltstack minion
+  - hosts jenkins agent
+  - builds our docker images
+  - runs our tests
+  - pushes our docker images
+- some { staging, production } web apps
+  - hosts saltstack minion
+  - pulls release docker images
+  - runs app container(s) behind nginx proxy
+- a { staging, production } postgres database
 
-## networks
+### networks
 
-private network: `10.100.0.0/16`
+ip addresses are of shape: `10.${location}.${type}.${instance}`
 
-- one: `10.100.0.1`
-- builder(s): `10.1.1.x`
-- staging: `10.100.10.1`
-- database: `10.100.100.1`
-- app(s): `10.100.101.x`
+locations:
 
-public load balancers to staging and app(s)
+- `nz-por-1`: 100
 
-## other ideas
+types:
 
-- manage our GitHub org and users
+- `saltstack master`: 1
+- `saltstack minion`: 2
+- `jenkins master`: 3
+- `jenkins agent`: 4
+- `web staging`: 5
+- `web production`: 6
+- `postgres staging`: 7
+- `postgres production`: 8
+- `docker registry`: 9
+- `npm cache`: 10
+
+## resources
+
+- [Packer - automating virtual machine image creation](http://alexconst.net/2016/01/11/packer/)
+- [How we deploy from Slack using Jenkins, Terraform, Docker and Ansible](https://medium.com/@levinotik/how-we-deploy-from-slack-using-jenkins-terraform-docker-and-ansible-4196b6856cdf)
+- [Subnetting the Server network. Best Practices?](https://www.reddit.com/r/networking/comments/41ukww/subnetting_the_server_network_best_practices/)

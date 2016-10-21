@@ -1,2 +1,4 @@
 npm-debug.log*
-/location
+/.vagrant
+/.packer
+/.builds

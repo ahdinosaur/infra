@@ -3,20 +3,9 @@
   "version": "0.0.0",
   "description": "Root Systems infrastructure using {Open,Salt}Stack",
   "scripts": {
-    "fix:permissions": "sudo chown -R dinosaur:dinosaur .",
-    "master:ssh": "ssh root@$(cat location)",
-    "master": "npm run master:ssh -- salt",
-    "master:apply": "npm run master -- '*' state.apply",
-    "master:refresh": "npm run master:ssh 'sh -s' < ./scripts/refresh-master",
-    "master:bootstrap": "npm run master:ssh 'sh -s' < ./scripts/bootstrap-master",
-    "master:ping": "npm run master -- '*' test.ping",
-    "salt-cloud:build": "docker build -t ahdinosaur/salt-cloud scripts/salt-cloud",
-    "salt-cloud:push": "docker push ahdinosaur/salt-cloud",
-    "salt-cloud": "docker run --rm -it -v $(pwd):/etc/salt ahdinosaur/salt-cloud",
-    "salt-ssh:build": "docker build -t ahdinosaur/salt-ssh scripts/salt-ssh",
-    "salt-ssh:push": "docker push ahdinosaur/salt-ssh",
-    "salt-ssh": "docker run --rm -it -v $(pwd):/etc/salt ahdinosaur/salt-ssh",
-    "salt-ssh:ping": "npm run salt-ssh -- '*' test.ping"
+    "base:test": "cd base && VAGRANT_DOTFILE_PATH=\"$(pwd)/../.vagrant\" vagrant up",
+    "base:build:validate": "cd base && PACKER_CACHE_DIR=\"$(pwd)/../.packer\" packer validate packer.json",
+    "base:build": "cd base && PACKER_CACHE_DIR=\"$(pwd)/../.packer\" packer build packer.json"
   },
   "author": "Mikey <michael.williams@enspiral.com> (http://dinosaur.is)",
   "license": ""

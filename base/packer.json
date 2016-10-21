@@ -1,0 +1,102 @@
+{
+  "description": "Creates a Debian 8 (Jessie) amd64 machine image.",
+  "variables": {
+    "name": "base",
+    "hostname": "base",
+    "domain": "",
+    "outputs_dir": "../.builds",
+    "iso_url": "http://cdimage.debian.org/debian-cd/8.6.0/amd64/iso-cd/debian-8.6.0-amd64-netinst.iso",
+    "iso_checksum": "9479c5c2df72ae3878116c43fb42eefae53d1fe363ce514a6afc8289064b9f5f",
+    "iso_checksum_type": "sha256",
+    "guest_os_type": "Debian_64",
+    "cores": "3",
+    "memory": "3072",
+    "disk_size": "5120",
+    "locale": "en_NZ",
+    "timezone": "NZ",
+    "kbd_lang": "us",
+    "kbd_model": "pc105",
+    "ssh_user": "vagrant",
+    "ssh_password": "vagrant",
+    "headless": "false"
+  },
+  "builders": [
+    {
+      "type": "virtualbox-iso",
+      "name": "base-virtualbox",
+      "vm_name": "{{user `name`}}",
+      "boot_command": [
+        "<esc><wait>",
+        "install <wait>",
+        "preseed/url=http://{{ .HTTPIP }}:{{ .HTTPPort }}/preseed.cfg <wait>",
+        "debian-installer={{user `locale`}} <wait>",
+        "auto <wait>",
+        "locale={{user `locale`}} <wait>",
+        "time/zone={{user `timezone`}} <wait>",
+        "kbd-chooser/method=us <wait>",
+        "netcfg/get_hostname={{user `hostname`}} <wait>",
+        "netcfg/get_domain={{user `domain`}} <wait>",
+        "fb=false <wait>",
+        "debconf/frontend=noninteractive <wait>",
+        "console-setup/ask_detect=false <wait>",
+        "console-keymaps-at/keymap={{user `kbd_lang`}} <wait>",
+        "keyboard-configuration/xkb-keymap={{user `kbd_lang`}} <wait>",
+        "keyboard-configuration/modelcode={{user `kbd_model`}} <wait>",
+        "passwd/root-login=false <wait>",
+        "passwd/user-fullname={{user `ssh_user`}} <wait>",
+        "passwd/username={{user `ssh_user`}} <wait>",
+        "passwd/user-password=\"{{user `ssh_password`}}\" <wait>",
+        "passwd/user-password-again=\"{{ user `ssh_password`}}\" <wait>",
+        "<enter><wait>"
+      ],
+
+      "http_directory": "http",
+      "iso_url": "{{user `iso_url`}}",
+      "iso_checksum": "{{user `iso_checksum`}}",
+      "iso_checksum_type": "{{user `iso_checksum_type`}}",
+
+      "guest_os_type": "{{user `guest_os_type`}}",
+      "guest_additions_mode": "upload",
+      "guest_additions_path": "/var/tmp/VBoxGuestAdditions_{{.Version}}.iso",
+
+      "communicator": "ssh",
+      "ssh_port": "22",
+      "ssh_username": "{{user `ssh_user`}}",
+      "ssh_password": "{{user `ssh_password`}}",
+      "ssh_wait_timeout": "30m",
+      "shutdown_command": "echo 'vagrant' | sudo -S shutdown -P now",
+      "output_directory": "{{user `outputs_dir`}}/{{user `vm_name`}}_{{build_name}}/",
+
+      "virtualbox_version_file": ".vbox_version",
+      "headless": "{{user `headless`}}",
+      "vboxmanage": [
+        [ "modifyvm", "{{.Name}}", "--cpus", "{{user `cores`}}" ],
+        [ "modifyvm", "{{.Name}}", "--memory", "{{user `memory`}}" ]
+      ],
+      "disk_size": "{{user `disk_size`}}"
+    }
+  ],
+  "provisioners": [
+    {
+      "type": "shell",
+      "only": ["base-virtualbox"],
+      "execute_command": "echo '{{user `ssh_password`}}' | {{.Vars}} sudo -E -S bash '{{.Path}}'",
+      "scripts": [
+        "scripts/base.sh",
+        "scripts/vagrant.sh",
+        "scripts/motd.sh",
+        "scripts/virtualbox.sh",
+        "scripts/cleanup.sh"
+      ]
+    }
+  ],
+  "post-processors": [
+    {
+      "type": "vagrant",
+      "only": ["base-virtualbox"],
+      "keep_input_artifact": true,
+      "compression_level": 0,
+      "output": "{{user `outputs_dir`}}/{{user `vm_name`}}_{{.BuildName}}.box"
+    }
+  ]
+}
