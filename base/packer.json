@@ -23,7 +23,7 @@
   "builders": [
     {
       "type": "virtualbox-iso",
-      "name": "base-virtualbox",
+      "name": "virtualbox",
       "vm_name": "{{user `name`}}",
       "boot_command": [
         "<esc><wait>",
@@ -64,8 +64,8 @@
       "ssh_username": "{{user `ssh_user`}}",
       "ssh_password": "{{user `ssh_password`}}",
       "ssh_wait_timeout": "30m",
-      "shutdown_command": "echo 'vagrant' | sudo -S shutdown -P now",
-      "output_directory": "{{user `outputs_dir`}}/{{user `vm_name`}}_{{build_name}}/",
+      "shutdown_command": "echo '{{user `ssh_password`}}' | sudo -S shutdown -P now",
+      "output_directory": "{{user `outputs_dir`}}/{{user `name`}}_{{build_name}}/",
 
       "virtualbox_version_file": ".vbox_version",
       "headless": "{{user `headless`}}",
@@ -79,7 +79,7 @@
   "provisioners": [
     {
       "type": "shell",
-      "only": ["base-virtualbox"],
+      "only": ["virtualbox"],
       "execute_command": "echo '{{user `ssh_password`}}' | {{.Vars}} sudo -E -S bash '{{.Path}}'",
       "scripts": [
         "scripts/base.sh",
@@ -93,7 +93,7 @@
   "post-processors": [
     {
       "type": "vagrant",
-      "only": ["base-virtualbox"],
+      "only": ["virtualbox"],
       "keep_input_artifact": true,
       "compression_level": 0,
       "output": "{{user `outputs_dir`}}/{{user `vm_name`}}_{{.BuildName}}.box"

@@ -5,7 +5,11 @@
   "scripts": {
     "base:test": "cd base && VAGRANT_DOTFILE_PATH=\"$(pwd)/../.vagrant\" vagrant up",
     "base:build:validate": "cd base && PACKER_CACHE_DIR=\"$(pwd)/../.packer\" packer validate packer.json",
-    "base:build": "cd base && PACKER_CACHE_DIR=\"$(pwd)/../.packer\" packer build packer.json"
+    "base:build": "cd base && PACKER_CACHE_DIR=\"$(pwd)/../.packer\" packer build packer.json",
+    "devstack:download": "cd devstack && if ! test -e scripts; then git clone https://github.com/openstack-dev/devstack.git scripts; fi",
+    "devstack:test": "cd devstack && VAGRANT_DOTFILE_PATH=\"$(pwd)/../.vagrant\" vagrant up",
+    "devstack:build:validate": "cd devstack && PACKER_CACHE_DIR=\"$(pwd)/../.packer\" packer validate packer.json",
+    "devstack:build": "cd devstack && PACKER_CACHE_DIR=\"$(pwd)/../.packer\" packer build packer.json"
   },
   "author": "Mikey <michael.williams@enspiral.com> (http://dinosaur.is)",
   "license": ""
