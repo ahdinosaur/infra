@@ -1,0 +1,32 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+def configure_vm(name, vm)
+  vm.hostname = name
+
+  vm.network :private_network, type: "dhcp"
+
+  vm.provider :virtualbox do |vb|
+    # you need this for openstack guests to talk to each other
+    vb.customize ["modifyvm", :id, "--nicpromisc2", "allow-all"]
+    # use VBoxManage to customize the VM. For example to change memory:
+    vb.customize ["modifyvm", :id, "--memory", "4096"]
+    vb.customize ["modifyvm", :id, "--cpus", "2"]
+  end
+
+  vm.provision "shell", path: "./install.sh"
+end
+
+Vagrant.configure("2") do |config|
+  config.vm.box = "debian/jessie64"
+
+  if Vagrant.has_plugin?("vagrant-cachier")
+    config.cache.scope = :box
+  end
+
+  config.vm.define "devstack" do |compute|
+    configure_vm("devstack", compute.vm)
+  end
+
+  config.ssh.forward_agent = true
+end

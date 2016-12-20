@@ -30,22 +30,21 @@ we want a setup where:
 
 ### dependencies
 
+- [openstack](https://openstack.org)
 - [catalyst cloud](www.catalyst.net.nz/catalyst-cloud)
-- [packer](https://www.packer.io)
-- [terraform](https://www.terraform.io)
 - [saltstack](https://saltstack.com)
 - [docker](https://www.docker.io)
 - [jenkins](https://jenkins.io/)
 
-### [setup]('./SETUP.md')
-
 ### workflow
 
-#### develop infra images using vagrant
+#### setup local openstack using devstack
 
-#### build infra images using packer
+see [./devstack/README](./devstack/README.md)
 
-#### deploy infra instances using terraform and openstack
+#### setup salt master using openstack heat
+
+#### setup salt minions using openstack heat
 
 #### orchestrate infra instances using saltstack
 
@@ -60,6 +59,7 @@ we want a setup where:
 
 - the primary support server
   - hosts saltstack master
+  - hosts saltstack minion
   - hosts jenkins master
   - handles dns for the network
   - provides an npm cache for the build servers
@@ -102,3 +102,4 @@ types:
 - [Packer - automating virtual machine image creation](http://alexconst.net/2016/01/11/packer/)
 - [How we deploy from Slack using Jenkins, Terraform, Docker and Ansible](https://medium.com/@levinotik/how-we-deploy-from-slack-using-jenkins-terraform-docker-and-ansible-4196b6856cdf)
 - [Subnetting the Server network. Best Practices?](https://www.reddit.com/r/networking/comments/41ukww/subnetting_the_server_network_best_practices/)
+- [Catalyst IT: Bootstrapping Puppet from Heat](http://docs.catalystcloud.io/tutorials/bootstrapping-puppet.html)

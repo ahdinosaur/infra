@@ -1,0 +1,1 @@
+{"rsync":{"/vagrant":{"type":"rsync","guestpath":"/vagrant","hostpath":"/home/dinosaur/repos/enspiral-root-systems/infra/devstack","disabled":false,"__vagrantfile":true,"owner":"vagrant","group":"vagrant"}}}
